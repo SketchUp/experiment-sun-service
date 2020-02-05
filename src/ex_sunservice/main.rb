@@ -2,6 +2,8 @@ require 'sketchup.rb'
 
 require 'ex_sunservice/execution'
 
+module Sketchup; class ModelService; end; end unless defined?(Sketchup::ModelService)
+
 module Examples::SunService
 
   unless file_loaded?(__FILE__)
