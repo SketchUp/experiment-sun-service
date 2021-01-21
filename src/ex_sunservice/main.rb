@@ -6,16 +6,22 @@ module Sketchup; class ModelService; end; end unless defined?(Sketchup::ModelSer
 
 module Examples::SunService
 
-  unless file_loaded?(__FILE__)
-    menu = UI.menu('Plugins')
-    menu.add_item('Sun Analysis') { self.analyse_sun }
+  # load 'ex_sunservice/main.rb'
+  # unless file_loaded?(__FILE__)
+  #   menu = UI.menu('Plugins')
+  #   menu.add_item('Sun Analysis') { self.analyse_sun }
+  # end
+
+  # Examples::SunService.register_services
+  def self.register_services
+    @service = SunAnalysisService.new
+    model = Sketchup.active_model
+    model.services.add(@service) # TODO: Should this be an app interface?
+    nil
   end
 
-  def self.analyse_sun
-    service = SunAnalysisService.new
-    model = Sketchup.active_model
-    model.services.add(service)
-    model.active_view.invalidate
+  def self.boot
+    self.register_services
   end
 
   class SunAnalysisService < Sketchup::ModelService
@@ -23,15 +29,19 @@ module Examples::SunService
     SUNLIT_COLOR = Sketchup::Color.new(255, 128, 0, 64)
 
     def initialize
-      super('SunAnalysis')
+      super('Sun Analysis')
 
       @triangles = []
+    end
 
-      model = Sketchup.active_model
-      model.add_observer(self)
-      model.shadow_info.add_observer(self)
+    def start(view)
+      start_observing_app
+      start_observing_model(view.model)
+    end
 
-      analyze
+    def stop(view)
+      stop_observing_model(view.model)
+      stop_observing_app
     end
 
     def draw(view)
@@ -54,6 +64,15 @@ module Examples::SunService
 
     def onShadowInfoChanged(shadow_info, type)
       reanalyze
+    end
+
+    # @param [Sketchup::Model]
+    def onNewModel(model)
+      start_observing_model(model)
+    end
+    # @param [Sketchup::Model]
+    def onOpenModel(model)
+      start_observing_model(model)
     end
 
     private
@@ -83,6 +102,38 @@ module Examples::SunService
       @triangles = triangles
     end
 
+    def start_observing_app
+      # TODO: Need to figure out how model services works with Mac's MDI.
+      return unless Sketchup.platform == :platform_win
+      Sketchup.remove_observer(self)
+      Sketchup.add_observer(self)
+    end
+
+    def stop_observing_app
+      return unless Sketchup.platform == :platform_win
+      Sketchup.remove_observer(self)
+    end
+
+    # @param [Sketchup::Model]
+    def start_observing_model(model)
+      stop_observing_model(model)
+      model.add_observer(self)
+      model.shadow_info.add_observer(self)
+      analyze
+    end
+
+    # @param [Sketchup::Model]
+    def stop_observing_model(model)
+      model.shadow_info.remove_observer(self)
+      model.remove_observer(self)
+    end
+
   end
+
+  unless file_loaded?(__FILE__)
+    self.boot
+  end
+
+  file_loaded(__FILE__)
 
 end # module
