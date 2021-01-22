@@ -2,8 +2,6 @@ require 'sketchup.rb'
 
 require 'ex_sunservice/execution'
 
-module Sketchup; class ModelService; end; end unless defined?(Sketchup::ModelService)
-
 module Examples::SunService
 
   # load 'ex_sunservice/main.rb'
@@ -14,8 +12,10 @@ module Examples::SunService
 
   # Examples::SunService.register_services
   def self.register_services
-    @service = SunAnalysisService.new
     model = Sketchup.active_model
+    return unless model.respond_to?(:services)
+
+    @service = SunAnalysisService.new
     model.services.add(@service) # TODO: Should this be an app interface?
     nil
   end
@@ -24,7 +24,16 @@ module Examples::SunService
     self.register_services
   end
 
-  class SunAnalysisService < Sketchup::ModelService
+  unless defined?(MODEL_SERVICE)
+    MODEL_SERVICE = if defined?(Sketchup::ModelService)
+      Sketchup::ModelService
+    else
+      require 'ex_sunservice/mock_service'
+      MockService
+    end
+  end
+
+  class SunAnalysisService < MODEL_SERVICE
 
     SUNLIT_COLOR = Sketchup::Color.new(255, 128, 0, 64)
 
