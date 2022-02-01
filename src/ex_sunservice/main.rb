@@ -37,8 +37,12 @@ module Examples::SunService
 
     SUNLIT_COLOR = Sketchup::Color.new(255, 128, 0, 64)
 
+    attr_reader :service_id, :name
+
     def initialize
-      super('Sun Analysis')
+      super
+      @service_id = 'thomthom.sunanalysis'.freeze
+      @name = 'Sun Analysis'.freeze
 
       @triangles = []
     end
