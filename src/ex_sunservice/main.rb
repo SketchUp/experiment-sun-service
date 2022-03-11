@@ -2,7 +2,7 @@ require 'sketchup.rb'
 
 require 'ex_sunservice/execution'
 
-module Examples::SunService
+module Examples::SunOverlay
 
   # load 'ex_sunservice/main.rb'
   # unless file_loaded?(__FILE__)
@@ -10,38 +10,38 @@ module Examples::SunService
   #   menu.add_item('Sun Analysis') { self.analyse_sun }
   # end
 
-  # Examples::SunService.register_services
-  def self.register_services
+  # Examples::SunOverlay.register_overlays
+  def self.register_overlays
     model = Sketchup.active_model
-    return unless model.respond_to?(:services)
+    return unless model.respond_to?(:overlays)
 
-    @service = SunAnalysisService.new
-    model.services.add(@service) # TODO: Should this be an app interface?
+    @overlays = SunAnalysisOverlay.new
+    model.overlays.add(@overlays)
     nil
   end
 
   def self.boot
-    self.register_services
+    self.register_overlays
   end
 
-  unless defined?(MODEL_SERVICE)
-    MODEL_SERVICE = if defined?(Sketchup::ModelService)
-      Sketchup::ModelService
+  unless defined?(OVERLAY)
+    OVERLAY = if defined?(Sketchup::Overlay)
+      Sketchup::Overlay
     else
-      require 'ex_sunservice/mock_service'
-      MockService
+      require 'ex_sunservice/mock_overlay'
+      MockOverlay
     end
   end
 
-  class SunAnalysisService < MODEL_SERVICE
+  class SunAnalysisOverlay < OVERLAY
 
     SUNLIT_COLOR = Sketchup::Color.new(255, 128, 0, 64)
 
-    attr_reader :service_id, :name
+    attr_reader :overlay_id, :name
 
     def initialize
       super
-      @service_id = 'thomthom.sunanalysis'.freeze
+      @overlay_id = 'thomthom.sunanalysis'.freeze
       @name = 'Sun Analysis'.freeze
 
       @triangles = []
@@ -116,7 +116,7 @@ module Examples::SunService
     end
 
     def start_observing_app
-      # TODO: Need to figure out how model services works with Mac's MDI.
+      # TODO: Need to figure out how model overlays works with Mac's MDI.
       return unless Sketchup.platform == :platform_win
       Sketchup.remove_observer(self)
       Sketchup.add_observer(self)

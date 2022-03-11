@@ -12,7 +12,7 @@ require 'extensions.rb'
 require 'sketchup.rb'
 
 module Examples
-module SunService
+module SunOverlay
 
   file = __FILE__.dup
   # Account for Ruby encoding bug under Windows.
@@ -41,7 +41,7 @@ module SunService
     Sketchup.register_extension(@extension, true)
   end
 
-end # module SunService
+end # module SunOverlay
 end # module Examples
 
 file_loaded(__FILE__)

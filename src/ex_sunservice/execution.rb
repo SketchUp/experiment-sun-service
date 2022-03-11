@@ -1,4 +1,4 @@
-module Examples::SunService
+module Examples::SunOverlay
   module Execution
 
     def self.delay(seconds, &block)
