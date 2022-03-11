@@ -53,7 +53,7 @@ module Examples::SunOverlay
     end
 
     def stop(view)
-      stop_observing_model(view.model)
+      stop_observing_model(view&.model || Sketchup.active_model)
       stop_observing_app
     end
 
