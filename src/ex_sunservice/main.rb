@@ -10,13 +10,30 @@ module Examples::SunOverlay
   #   menu.add_item('Sun Analysis') { self.analyse_sun }
   # end
 
+  class AppObserver < Sketchup::AppObserver
+
+    def expectsStartupModelNotifications
+      true
+    end
+
+    def register_overlay(model)
+      @@overlays ||= {}
+      overlay = SunAnalysisOverlay.new
+      model.overlays.add(overlay)
+      @@overlays[model] = overlay
+    end
+    alias_method :onNewModel, :register_overlay
+    alias_method :onOpenModel, :register_overlay
+
+  end
+
   # Examples::SunOverlay.register_overlays
   def self.register_overlays
     model = Sketchup.active_model
     return unless model.respond_to?(:overlays)
 
-    @overlays = SunAnalysisOverlay.new
-    model.overlays.add(@overlays)
+    observer = AppObserver.new
+    Sketchup.add_observer(observer)
     nil
   end
 
