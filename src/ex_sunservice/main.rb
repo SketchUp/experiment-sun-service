@@ -17,10 +17,8 @@ module Examples::SunOverlay
     end
 
     def register_overlay(model)
-      @@overlays ||= {}
       overlay = SunAnalysisOverlay.new
       model.overlays.add(overlay)
-      @@overlays[model] = overlay
     end
     alias_method :onNewModel, :register_overlay
     alias_method :onOpenModel, :register_overlay
