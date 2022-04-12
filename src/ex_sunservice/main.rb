@@ -152,6 +152,8 @@ module Examples::SunOverlay
 
     # @param [Sketchup::Model]
     def stop_observing_model(model)
+      return if model.nil? # Mac when model is closed.
+      
       model.shadow_info.remove_observer(self)
       model.remove_observer(self)
     end
