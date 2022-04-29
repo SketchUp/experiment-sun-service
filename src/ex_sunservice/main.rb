@@ -52,23 +52,19 @@ module Examples::SunOverlay
 
     SUNLIT_COLOR = Sketchup::Color.new(255, 128, 0, 64)
 
-    attr_reader :overlay_id, :name
-
     def initialize
-      super
-      @overlay_id = 'thomthom.sunanalysis'.freeze
-      @name = 'Sun Analysis'.freeze
+      super('thomthom.sunanalysis', 'Sun Analysis')
 
       @triangles = []
     end
 
-    def start(view)
+    def start
       start_observing_app
-      start_observing_model(view.model)
+      start_observing_model(Sketchup.active_model)
     end
 
-    def stop(view)
-      stop_observing_model(view&.model || Sketchup.active_model)
+    def stop
+      stop_observing_model(Sketchup.active_model)
       stop_observing_app
     end
 
@@ -153,7 +149,7 @@ module Examples::SunOverlay
     # @param [Sketchup::Model]
     def stop_observing_model(model)
       return if model.nil? # Mac when model is closed.
-      
+
       model.shadow_info.remove_observer(self)
       model.remove_observer(self)
     end
