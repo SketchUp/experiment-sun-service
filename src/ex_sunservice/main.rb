@@ -4,12 +4,6 @@ require 'ex_sunservice/execution'
 
 module Examples::SunOverlay
 
-  # load 'ex_sunservice/main.rb'
-  # unless file_loaded?(__FILE__)
-  #   menu = UI.menu('Plugins')
-  #   menu.add_item('Sun Analysis') { self.analyse_sun }
-  # end
-
   class AppObserver < Sketchup::AppObserver
 
     def expectsStartupModelNotifications
@@ -18,7 +12,12 @@ module Examples::SunOverlay
 
     def register_overlay(model)
       overlay = SunAnalysisOverlay.new
-      model.overlays.add(overlay)
+      begin
+        model.overlays.add(overlay)
+      rescue ArgumentError => error
+        # If the overlay was already registered.
+        warn error
+      end
     end
     alias_method :onNewModel, :register_overlay
     alias_method :onOpenModel, :register_overlay
@@ -32,6 +31,12 @@ module Examples::SunOverlay
 
     observer = AppObserver.new
     Sketchup.add_observer(observer)
+
+    # In the case of installing or enabling the extension we need to
+    # register the overlay.
+    model = Sketchup.active_model
+    observer.register_overlay(model) if model
+
     nil
   end
 
@@ -39,16 +44,7 @@ module Examples::SunOverlay
     self.register_overlays
   end
 
-  unless defined?(OVERLAY)
-    OVERLAY = if defined?(Sketchup::Overlay)
-      Sketchup::Overlay
-    else
-      require 'ex_sunservice/mock_overlay'
-      MockOverlay
-    end
-  end
-
-  class SunAnalysisOverlay < OVERLAY
+  class SunAnalysisOverlay < Sketchup::Overlay
 
     SUNLIT_COLOR = Sketchup::Color.new(255, 128, 0, 64)
 
@@ -127,14 +123,11 @@ module Examples::SunOverlay
     end
 
     def start_observing_app
-      # TODO: Need to figure out how model overlays works with Mac's MDI.
-      return unless Sketchup.platform == :platform_win
       Sketchup.remove_observer(self)
       Sketchup.add_observer(self)
     end
 
     def stop_observing_app
-      return unless Sketchup.platform == :platform_win
       Sketchup.remove_observer(self)
     end
 
