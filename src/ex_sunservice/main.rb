@@ -147,7 +147,7 @@ module Examples::SunOverlay
       model.remove_observer(self)
     end
 
-  end
+  end if defined?(Sketchup::Overlay)
 
   unless file_loaded?(__FILE__)
     self.boot
